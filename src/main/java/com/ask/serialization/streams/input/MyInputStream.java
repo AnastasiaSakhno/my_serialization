@@ -236,7 +236,7 @@ public class MyInputStream implements InputStream {
                     .forEach(field -> {
                         field.setAccessible(true);
                         try {
-                                readPrimitiveData(field, obj);
+                            readPrimitiveData(field, obj);
                         } catch (ReflectiveOperationException e) {
                             e.printStackTrace();
                         } finally {
@@ -254,7 +254,7 @@ public class MyInputStream implements InputStream {
                                 readEnumData(field, obj);
                             } else if (field.getType().isArray()) {
                                 field.set(obj, readArray());
-                            } else {
+                            } else if (!field.getType().isPrimitive()) {
                                 field.set(obj, readObject());
                             }
                         } catch (ReflectiveOperationException | IOException e) {
@@ -289,7 +289,16 @@ public class MyInputStream implements InputStream {
         }
     }
 
-    private Enum readEnumData(Field field, Object obj) {
-        throw new NotImplementedException();
+    private void readEnumData(Field field, Object obj) throws IllegalAccessException, IOException, ClassNotFoundException {
+        byte b = readByte();
+        if (b == SC_ENUM) {
+            throw new IllegalStateException("wrong enum descriptor");
+        }
+
+        readClassMetadata();
+        short nameLength = readShort();
+        String name = new String(readBytes(nameLength));
+        Enum o = Enum.valueOf((Class<Enum>) field.getType(), name);
+        field.set(obj, o);
     }
 }
