@@ -93,9 +93,8 @@ public class MyInputStreamTests {
 
     @Test
     public void readsObject() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        Animal cat = new Cat();
+        Animal cat = new Cat(Cat.Color.BLACK);
         cat.setName("Tom");
-        ((Cat) cat).setColor(Cat.Color.BLACK);
         OutputStream os = new MyOutputStream();
         os.writeObject(cat);
         byte[] bytes = os.getBytes();

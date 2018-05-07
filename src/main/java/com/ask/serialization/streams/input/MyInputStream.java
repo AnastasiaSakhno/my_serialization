@@ -6,7 +6,6 @@ import com.ask.serialization.streams.domain.FieldMetadata;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -151,6 +150,10 @@ public class MyInputStream implements InputStream {
             return readString();
         } else if (b == S_NUMBER) {
             return readNumber();
+        } else if (b == S_CHARACTER) {
+            return readChar();
+        } else if (b == S_BOOLEAN) {
+            return readBool();
         } else if (b == S_OBJECT) {
             List<ClassMetadata> classMetadataList = readClassMetadata();
             Object obj = createInstance(classMetadataList);

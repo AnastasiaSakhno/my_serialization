@@ -3,7 +3,7 @@ package com.ask.serialization.streams.test.entities;
 import java.util.Objects;
 
 public class Cat extends Animal {
-    private Color color;
+    private final Color color;
 
     public Cat() {
         super(false, 4);
@@ -11,16 +11,12 @@ public class Cat extends Animal {
     }
 
     public Cat(Color color) {
-        this();
+        super(false, 4);
         this.color = color;
     }
 
     public Color getColor() {
         return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
     }
 
     public enum Color {

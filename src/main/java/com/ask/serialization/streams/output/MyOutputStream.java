@@ -174,7 +174,13 @@ public class MyOutputStream implements OutputStream {
                         } else if (o instanceof Number) {
                             writeNumber((Number) o);
                         } else if (!field.getType().isPrimitive()) {
-                            writeObject(o);
+                            if (o instanceof Character) {
+                                writeCharacter((Character) o);
+                            } else if (o instanceof Boolean) {
+                                writeBoolean((Boolean) o);
+                            } else {
+                                writeObject(o);
+                            }
                         }
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
@@ -215,6 +221,16 @@ public class MyOutputStream implements OutputStream {
         } else {
             throw new IllegalStateException("unknown number class");
         }
+    }
+
+    private void writeCharacter(Character obj) {
+        writeByte(S_CHARACTER);
+        writeChar(obj);
+    }
+
+    private void writeBoolean(Boolean obj) {
+        writeByte(S_BOOLEAN);
+        writeBool(obj);
     }
 
     private void writeEnum(Enum obj) {

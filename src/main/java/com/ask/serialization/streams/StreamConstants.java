@@ -18,6 +18,8 @@ public class StreamConstants {
     public final static byte S_STRING = (byte) 0x74;
     public final static byte S_ARRAY = (byte) 0x75;
     public final static byte S_NUMBER = (byte) 0x76;
+    public final static byte S_CHARACTER = (byte) 0x77;
+    public final static byte S_BOOLEAN = (byte) 0x71;
     public final static byte S_ENDBLOCKDATA = (byte) 0x78;
     public final static byte S_ENUM = (byte) 0x7E;
     public final static byte SC_ENUM = 0x10;
