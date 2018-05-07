@@ -92,15 +92,6 @@ public class MyInputStreamTests {
     }
 
     @Test
-    public void readsArrayOfPrimitives() throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
-        byte[] bytes = {0x75, 0x49, 0, 0x02, 127, -1, -1, -1, -128, 0, 0, 0};
-        InputStream is = new MyInputStream(bytes);
-        int[] expected = {Integer.MAX_VALUE, Integer.MIN_VALUE};
-        int[] actual = (int[]) is.readArray();
-        assertArrayEquals(expected, actual);
-    }
-
-    @Test
     public void readsObject() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         Animal cat = new Cat();
         cat.setName("Tom");

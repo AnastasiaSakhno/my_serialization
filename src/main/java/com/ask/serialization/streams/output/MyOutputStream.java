@@ -171,6 +171,8 @@ public class MyOutputStream implements OutputStream {
                             writeEnum((Enum) o);
                         } else if (o instanceof String) {
                             writeString((String) o);
+                        } else if (o instanceof Number) {
+                            writeNumber((Number) o);
                         } else if (!field.getType().isPrimitive()) {
                             writeObject(o);
                         }
@@ -188,6 +190,31 @@ public class MyOutputStream implements OutputStream {
         writeByte(S_STRING);
         writeInt(obj.length());
         writeBytes(obj.getBytes());
+    }
+
+    private void writeNumber(Number obj) {
+        writeByte(S_NUMBER);
+        if (obj.getClass() == Byte.class) {
+            writeByte(SCT_BYTE);
+            writeByte((byte) obj);
+        } else if (obj.getClass() == Double.class) {
+            writeByte(SCT_DOUBLE);
+            writeDouble((double) obj);
+        } else if (obj.getClass() == Float.class) {
+            writeByte(SCT_FLOAT);
+            writeFloat((float) obj);
+        } else if (obj.getClass() == Integer.class) {
+            writeByte(SCT_INT);
+            writeInt((int) obj);
+        } else if (obj.getClass() == Long.class) {
+            writeByte(SCT_LONG);
+            writeLong((long) obj);
+        } else if (obj.getClass() == Short.class) {
+            writeByte(SCT_SHORT);
+            writeShort((short) obj);
+        } else {
+            throw new IllegalStateException("unknown number class");
+        }
     }
 
     private void writeEnum(Enum obj) {

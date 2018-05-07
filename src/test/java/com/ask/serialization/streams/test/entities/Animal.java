@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Animal implements Serializable {
     private boolean vegetarian;
-    private int noOfLegs;
+    private Integer noOfLegs;
     private String name;
 
     public Animal() {

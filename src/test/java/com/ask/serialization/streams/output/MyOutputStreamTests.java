@@ -125,15 +125,16 @@ public class MyOutputStreamTests {
                 + "72" + pob((short) animalClassName.length()) + pob(animalClassName)
                 + "0003"
                 + "46000A" + pob("vegetarian")
-                + "490008" + pob("noOfLegs")
+                + "4D0008" + pob("noOfLegs")
                 + "4D0004" + pob("name")
                 + "78"
-                + "70" + "00" + "00000004"
+                + "70" + "00"
                 + "7E" + "72" + pob((short) colorEnumName.length()) + pob(colorEnumName)
                 + "0000"
                 + "78"
                 + "70"
                 + pob((short) catColor.length()) + pob(catColor)
+                + "76" + "49" + "00000004" // 4
                 + "74" + "00000003" + pob(obj.getName()) // Tom
                 ;
         OutputStream os = new MyOutputStream();

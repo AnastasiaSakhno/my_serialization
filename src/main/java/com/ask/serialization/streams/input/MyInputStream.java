@@ -6,7 +6,9 @@ import com.ask.serialization.streams.domain.FieldMetadata;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.ask.serialization.streams.StreamConstants.*;
@@ -76,14 +78,8 @@ public class MyInputStream implements InputStream {
         return Double.longBitsToDouble(readLong());
     }
 
-    @Override
-    public Object readArray() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
+    private Object readArray() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         byte b = readByte();
-        if (b != S_ARRAY) {
-            throw new IllegalStateException("could not read array");
-        }
-
-        b = readByte();
 
         short length = readShort();
 
@@ -147,20 +143,21 @@ public class MyInputStream implements InputStream {
     public Object readObject() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         byte b = readByte();
 
-        switch (b) {
-            case S_NULL:
-                return null;
-            case S_ARRAY:
-                return readArray();
-            case S_STRING:
-                return readString();
-            case S_OBJECT:
-                List<ClassMetadata> classMetadataList = readClassMetadata();
-                Object obj = createInstance(classMetadataList);
-                readObjectData(obj, classMetadataList);
-                return obj;
-            default:
-                throw new IOException("unknown object descriptor");
+        if (b == S_NULL) {
+            return null;
+        } else if (b == S_ARRAY) {
+            return readArray();
+        } else if (b == S_STRING) {
+            return readString();
+        } else if (b == S_NUMBER) {
+            return readNumber();
+        } else if (b == S_OBJECT) {
+            List<ClassMetadata> classMetadataList = readClassMetadata();
+            Object obj = createInstance(classMetadataList);
+            readObjectData(obj, classMetadataList);
+            return obj;
+        } else {
+            throw new IOException("unknown object descriptor");
         }
     }
 
@@ -209,42 +206,44 @@ public class MyInputStream implements InputStream {
     }
 
     private Class getFieldType(byte b) {
-        switch (b) {
-            case SCT_BOOL:
-                return Boolean.TYPE;
-            case SCT_BYTE:
-                return Byte.TYPE;
-            case SCT_CHAR:
-                return Character.TYPE;
-            case SCT_DOUBLE:
-                return Double.TYPE;
-            case SCT_FLOAT:
-                return Float.TYPE;
-            case SCT_INT:
-                return Integer.TYPE;
-            case SCT_LONG:
-                return Long.TYPE;
-            case SCT_SHORT:
-                return Short.TYPE;
-            case SCT_ENUM:
-                return Enum.class;
-            case SCT_OBJECT:
-                return Object.class;
-            default:
-                throw new IllegalStateException("could not find field's type");
+        if (b == SCT_BOOL) {
+            return Boolean.TYPE;
+        } else if (b == SCT_BYTE) {
+            return Byte.TYPE;
+        } else if (b == SCT_CHAR) {
+            return Character.TYPE;
+        } else if (b == SCT_DOUBLE) {
+            return Double.TYPE;
+        } else if (b == SCT_FLOAT) {
+            return Float.TYPE;
+        } else if (b == SCT_INT) {
+            return Integer.TYPE;
+        } else if (b == SCT_LONG) {
+            return Long.TYPE;
+        } else if (b == SCT_SHORT) {
+            return Short.TYPE;
+        } else if (b == SCT_ENUM) {
+            return Enum.class;
+        } else if (b == SCT_OBJECT) {
+            return Object.class;
+        } else {
+            throw new IllegalStateException("could not find field's type");
         }
     }
 
     private Object createInstance(List<ClassMetadata> superClasses) throws IOException, IllegalAccessException, InstantiationException {
         Object obj = null;
         for (ClassMetadata cm : superClasses) {
-            if (Serializable.class.isAssignableFrom(cm.getClazz())) {
+            boolean hasDefaultConstructor = Arrays.stream(cm.getClazz().getConstructors())
+                    .anyMatch(c -> c.getParameterCount() == 0);
+            if (hasDefaultConstructor && Serializable.class.isAssignableFrom(cm.getClazz())) {
                 obj = cm.getClazz().newInstance();
                 break;
             }
         }
+
         if (obj == null) {
-            throw new IOException("could not find not serializable super classes default constructor");
+            throw new IOException("could not find serializable default constructor");
         }
         return obj;
     }
@@ -272,8 +271,6 @@ public class MyInputStream implements InputStream {
                         try {
                             if (field.getType().isEnum()) {
                                 readEnumData(field, obj);
-                            } else if (field.getType() == String.class) {
-                                field.set(obj, readString());
                             } else if (field.getType().isArray()) {
                                 field.set(obj, readArray());
                             } else if (!field.getType().isPrimitive()) {
@@ -312,12 +309,28 @@ public class MyInputStream implements InputStream {
     }
 
     private String readString() {
-        byte b = readByte();
-        if (b != S_STRING) {
-            throw new IllegalStateException("wrong string descriptor");
-        }
         int length = readInt();
         return new String(readBytes(length));
+    }
+
+    private Number readNumber() {
+        byte type = readByte();
+
+        if (type == SCT_BYTE) {
+            return readByte();
+        } else if (type == SCT_DOUBLE) {
+            return readDouble();
+        } else if (type == SCT_FLOAT) {
+            return readFloat();
+        } else if (type == SCT_INT) {
+            return readInt();
+        } else if (type == SCT_LONG) {
+            return readLong();
+        } else if (type == SCT_SHORT) {
+            return readShort();
+        } else {
+            throw new IllegalStateException("wrong number descriptor");
+        }
     }
 
     private void readEnumData(Field field, Object obj) throws IllegalAccessException, IOException, ClassNotFoundException {
