@@ -2,12 +2,9 @@ package com.ask.serialization.streams.output;
 
 import com.ask.serialization.streams.test.entities.Animal;
 import com.ask.serialization.streams.test.entities.Cat;
-import com.sun.deploy.util.StringUtils;
 import org.junit.Test;
 
 import javax.xml.bind.DatatypeConverter;
-
-import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -116,18 +113,21 @@ public class MyOutputStreamTests {
     @Test
     public void writesObject() {
         Cat obj = new Cat();
+        obj.setName("Tom");
         String catClassName = Cat.class.getName();
         String animalClassName = Animal.class.getName();
         String colorEnumName = Cat.Color.class.getName();
+        String stringClassName = String.class.getName();
         String catColor = obj.getColor().name();
         String expected = "73" + "72" + pob((short) catClassName.length()) + pob(catClassName)
                 + "0001"
                 + "4E0005" + pob("color")
                 + "78"
                 + "72" + pob((short) animalClassName.length()) + pob(animalClassName)
-                + "0002"
+                + "0003"
                 + "46000A" + pob("vegetarian")
                 + "490008" + pob("noOfLegs")
+                + "4D0004" + pob("name")
                 + "78"
                 + "70" + "00" + "00000004"
                 + "7E" + "72" + pob((short) colorEnumName.length()) + pob(colorEnumName)
@@ -135,6 +135,7 @@ public class MyOutputStreamTests {
                 + "78"
                 + "70"
                 + pob((short) catColor.length()) + pob(catColor)
+                + "74" + "00000003" + pob(obj.getName()) // Tom
                 ;
         OutputStream os = new MyOutputStream();
         os.writeObject(obj);

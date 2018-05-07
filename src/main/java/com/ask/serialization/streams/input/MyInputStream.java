@@ -2,11 +2,11 @@ package com.ask.serialization.streams.input;
 
 import com.ask.serialization.streams.domain.ClassMetadata;
 import com.ask.serialization.streams.domain.FieldMetadata;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,6 +79,7 @@ public class MyInputStream implements InputStream {
 
     @Override
     public Object[] readArray() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
+        // TODO need to do reading primitives and objects arrays
         byte b = readByte();
         if (b != S_ARRAY) {
             throw new IllegalStateException("could not read array");
@@ -134,6 +135,8 @@ public class MyInputStream implements InputStream {
         switch (b) {
             case S_NULL:
                 return null;
+            case S_ARRAY:
+                return readArray();
             case S_OBJECT:
                 List<ClassMetadata> classMetadataList = readClassMetadata();
                 Object obj = createInstance(classMetadataList);
@@ -252,6 +255,8 @@ public class MyInputStream implements InputStream {
                         try {
                             if (field.getType().isEnum()) {
                                 readEnumData(field, obj);
+                            } else if (field.getType() == String.class) {
+                                readString(field, obj);
                             } else if (field.getType().isArray()) {
                                 field.set(obj, readArray());
                             } else if (!field.getType().isPrimitive()) {
@@ -264,6 +269,16 @@ public class MyInputStream implements InputStream {
                         }
                     });
         }
+    }
+
+    private void readString(Field field, Object obj) throws IllegalAccessException {
+        byte b = readByte();
+        if (b != S_STRING) {
+            throw new IllegalStateException("wrong string descriptor");
+        }
+        int length = readInt();
+        String value = new String(readBytes(length));
+        field.set(obj, value);
     }
 
     private void readPrimitiveData(Field field, Object obj) throws IllegalAccessException {

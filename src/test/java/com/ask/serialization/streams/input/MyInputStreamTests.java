@@ -1,9 +1,13 @@
 package com.ask.serialization.streams.input;
 
+import com.ask.serialization.streams.output.MyOutputStream;
+import com.ask.serialization.streams.output.OutputStream;
+import com.ask.serialization.streams.test.entities.Animal;
 import com.ask.serialization.streams.test.entities.Cat;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -100,10 +104,13 @@ public class MyInputStreamTests {
 
     @Test
     public void readsObject() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        // took from MyOutputStreamTests#writesObject
-        byte[] bytes = {115, 114, 0, 47, 99, 111, 109, 46, 97, 115, 107, 46, 115, 101, 114, 105, 97, 108, 105, 122, 97, 116, 105, 111, 110, 46, 115, 116, 114, 101, 97, 109, 115, 46, 116, 101, 115, 116, 46, 101, 110, 116, 105, 116, 105, 101, 115, 46, 67, 97, 116, 0, 1, 78, 0, 5, 99, 111, 108, 111, 114, 120, 114, 0, 50, 99, 111, 109, 46, 97, 115, 107, 46, 115, 101, 114, 105, 97, 108, 105, 122, 97, 116, 105, 111, 110, 46, 115, 116, 114, 101, 97, 109, 115, 46, 116, 101, 115, 116, 46, 101, 110, 116, 105, 116, 105, 101, 115, 46, 65, 110, 105, 109, 97, 108, 0, 2, 70, 0, 10, 118, 101, 103, 101, 116, 97, 114, 105, 97, 110, 73, 0, 8, 110, 111, 79, 102, 76, 101, 103, 115, 120, 112, 0, 0, 0, 0, 4, 126, 114, 0, 53, 99, 111, 109, 46, 97, 115, 107, 46, 115, 101, 114, 105, 97, 108, 105, 122, 97, 116, 105, 111, 110, 46, 115, 116, 114, 101, 97, 109, 115, 46, 116, 101, 115, 116, 46, 101, 110, 116, 105, 116, 105, 101, 115, 46, 67, 97, 116, 36, 67, 111, 108, 111, 114, 0, 0, 120, 112, 0, 5, 87, 72, 73, 84, 69};
+        Animal cat = new Cat();
+        cat.setName("Tom");
+        OutputStream os = new MyOutputStream();
+        os.writeObject(cat);
+        byte[] bytes = os.getBytes();
         InputStream is = new MyInputStream(bytes);
-        Object expected = new Cat();
+        Object expected = cat;
         Object actual = is.readObject();
         assertEquals(expected, actual);
     }

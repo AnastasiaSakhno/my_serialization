@@ -5,6 +5,7 @@ import java.io.Serializable;
 public class Animal implements Serializable {
     private boolean vegetarian;
     private int noOfLegs;
+    private String name;
 
     public Animal() {
     }
@@ -28,5 +29,13 @@ public class Animal implements Serializable {
 
     public void setNoOfLegs(int noOfLegs) {
         this.noOfLegs = noOfLegs;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

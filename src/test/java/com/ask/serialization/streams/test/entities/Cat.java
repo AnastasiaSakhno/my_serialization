@@ -32,12 +32,11 @@ public class Cat extends Animal {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Cat cat = (Cat) o;
-        return color == cat.color;
+        return color == cat.color && getName().equals(cat.getName());
     }
 
     @Override
     public int hashCode() {
-
-        return Objects.hash(color);
+        return Objects.hash(color, getName());
     }
 }

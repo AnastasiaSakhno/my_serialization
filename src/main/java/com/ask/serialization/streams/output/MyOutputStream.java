@@ -145,17 +145,21 @@ public class MyOutputStream implements OutputStream {
 
         writeClassMetadata(obj.getClass());
 
-        writeObjectData(obj);
+        writePrimitivesData(obj);
+
+        writeObjectData(obj, obj.getClass());
     }
 
     private void writeNull() {
         writeByte(S_NULL);
     }
 
-    private void writeObjectData(Object obj) {
-        writePrimitivesData(obj);
+    private void writeObjectData(Object obj, Class clazz) {
+        if(clazz == Object.class) {
+            return;
+        }
 
-        getFieldsStream(obj.getClass())
+        getFieldsStream(clazz)
                 .forEach(field -> {
                     try {
                         field.setAccessible(true);
@@ -165,6 +169,8 @@ public class MyOutputStream implements OutputStream {
                             writeArray(o);
                         } else if (o instanceof Enum) {
                             writeEnum((Enum) o);
+                        } else if (o instanceof String) {
+                            writeString((String) o);
                         } else if (!field.getType().isPrimitive()) {
                             writeObject(o);
                         }
@@ -174,6 +180,14 @@ public class MyOutputStream implements OutputStream {
                         field.setAccessible(false);
                     }
                 });
+
+        writeObjectData(obj, clazz.getSuperclass());
+    }
+
+    private void writeString(String obj) {
+        writeByte(S_STRING);
+        writeInt(obj.length());
+        writeBytes(obj.getBytes());
     }
 
     private void writeEnum(Enum obj) {
