@@ -117,7 +117,6 @@ public class MyOutputStreamTests {
         String catClassName = Cat.class.getName();
         String animalClassName = Animal.class.getName();
         String colorEnumName = Cat.Color.class.getName();
-        String stringClassName = String.class.getName();
         String catColor = obj.getColor().name();
         String expected = "73" + "72" + pob((short) catClassName.length()) + pob(catClassName)
                 + "0001"

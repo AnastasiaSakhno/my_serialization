@@ -6,7 +6,6 @@ import com.ask.serialization.streams.domain.FieldMetadata;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,8 +77,7 @@ public class MyInputStream implements InputStream {
     }
 
     @Override
-    public Object[] readArray() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
-        // TODO need to do reading primitives and objects arrays
+    public Object readArray() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException {
         byte b = readByte();
         if (b != S_ARRAY) {
             throw new IllegalStateException("could not read array");
@@ -88,44 +86,61 @@ public class MyInputStream implements InputStream {
         b = readByte();
 
         short length = readShort();
-        Object[] arr = new Object[length];
 
-        for (int i = 0; i < length; i++) {
-            Object read;
-            switch (b) {
-                case SCT_BOOL:
-                    read = readBool();
-                    break;
-                case SCT_BYTE:
-                    read = readByte();
-                    break;
-                case SCT_CHAR:
-                    read = readChar();
-                    break;
-                case SCT_DOUBLE:
-                    read = readDouble();
-                    break;
-                case SCT_FLOAT:
-                    read = readFloat();
-                    break;
-                case SCT_INT:
-                    read = readInt();
-                    break;
-                case SCT_LONG:
-                    read = readLong();
-                    break;
-                case SCT_SHORT:
-                    read = readShort();
-                    break;
-                case SCT_OBJECT:
-                    read = readObject();
-                    break;
-                default:
-                    throw new IllegalStateException("could not find array's type");
-            }
-            arr[i] = read;
+        switch (b) {
+            case SCT_BOOL:
+                boolean[] booleans = new boolean[length];
+                for (int i = 0; i < length; i++) {
+                    booleans[i] = readBool();
+                }
+                return booleans;
+            case SCT_BYTE:
+                return readBytes(length);
+            case SCT_CHAR:
+                char[] chars = new char[length];
+                for (int i = 0; i < length; i++) {
+                    chars[i] = readChar();
+                }
+                return chars;
+            case SCT_DOUBLE:
+                double[] doubles = new double[length];
+                for (int i = 0; i < length; i++) {
+                    doubles[i] = readDouble();
+                }
+                return doubles;
+            case SCT_FLOAT:
+                float[] floats = new float[length];
+                for (int i = 0; i < length; i++) {
+                    floats[i] = readFloat();
+                }
+                return floats;
+            case SCT_INT:
+                int[] ints = new int[length];
+                for (int i = 0; i < length; i++) {
+                    ints[i] = readInt();
+                }
+                return ints;
+            case SCT_LONG:
+                long[] longs = new long[length];
+                for (int i = 0; i < length; i++) {
+                    longs[i] = readLong();
+                }
+                return longs;
+            case SCT_SHORT:
+                short[] shorts = new short[length];
+                for (int i = 0; i < length; i++) {
+                    shorts[i] = readShort();
+                }
+                return shorts;
+            case SCT_OBJECT:
+                Object[] objects = new Object[length];
+                for (int i = 0; i < length; i++) {
+                    objects[i] = readObject();
+                }
+                return objects;
+            default:
+                throw new IllegalStateException("could not find array's type");
         }
-        return arr;
     }
 
     @Override
@@ -137,6 +152,8 @@ public class MyInputStream implements InputStream {
                 return null;
             case S_ARRAY:
                 return readArray();
+            case S_STRING:
+                return readString();
             case S_OBJECT:
                 List<ClassMetadata> classMetadataList = readClassMetadata();
                 Object obj = createInstance(classMetadataList);
@@ -256,7 +273,7 @@ public class MyInputStream implements InputStream {
                             if (field.getType().isEnum()) {
                                 readEnumData(field, obj);
                             } else if (field.getType() == String.class) {
-                                readString(field, obj);
+                                field.set(obj, readString());
                             } else if (field.getType().isArray()) {
                                 field.set(obj, readArray());
                             } else if (!field.getType().isPrimitive()) {
@@ -269,16 +286,6 @@ public class MyInputStream implements InputStream {
                         }
                     });
         }
-    }
-
-    private void readString(Field field, Object obj) throws IllegalAccessException {
-        byte b = readByte();
-        if (b != S_STRING) {
-            throw new IllegalStateException("wrong string descriptor");
-        }
-        int length = readInt();
-        String value = new String(readBytes(length));
-        field.set(obj, value);
     }
 
     private void readPrimitiveData(Field field, Object obj) throws IllegalAccessException {
@@ -302,6 +309,15 @@ public class MyInputStream implements InputStream {
             // should never happen
             throw new IllegalStateException("unknown primitive type");
         }
+    }
+
+    private String readString() {
+        byte b = readByte();
+        if (b != S_STRING) {
+            throw new IllegalStateException("wrong string descriptor");
+        }
+        int length = readInt();
+        return new String(readBytes(length));
     }
 
     private void readEnumData(Field field, Object obj) throws IllegalAccessException, IOException, ClassNotFoundException {

@@ -22,7 +22,7 @@ public interface InputStream {
 
     double readDouble();
 
-    Object[] readArray() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException;
+    Object readArray() throws ClassNotFoundException, InstantiationException, IllegalAccessException, IOException;
 
     Object readObject() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException;
 }

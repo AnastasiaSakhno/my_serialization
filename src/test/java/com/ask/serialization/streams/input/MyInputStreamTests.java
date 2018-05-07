@@ -7,7 +7,6 @@ import com.ask.serialization.streams.test.entities.Cat;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -34,9 +33,8 @@ public class MyInputStreamTests {
     public void readsBool() {
         byte[] bytes = {0x01};
         InputStream is = new MyInputStream(bytes);
-        boolean expected = true;
         boolean actual = is.readBool();
-        assertEquals(expected, actual);
+        assertTrue(actual);
     }
 
     @Test
@@ -97,8 +95,8 @@ public class MyInputStreamTests {
     public void readsArrayOfPrimitives() throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
         byte[] bytes = {0x75, 0x49, 0, 0x02, 127, -1, -1, -1, -128, 0, 0, 0};
         InputStream is = new MyInputStream(bytes);
-        Object[] expected = {Integer.MAX_VALUE, Integer.MIN_VALUE};
-        Object[] actual = is.readArray();
+        int[] expected = {Integer.MAX_VALUE, Integer.MIN_VALUE};
+        int[] actual = (int[]) is.readArray();
         assertArrayEquals(expected, actual);
     }
 
@@ -106,13 +104,13 @@ public class MyInputStreamTests {
     public void readsObject() throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         Animal cat = new Cat();
         cat.setName("Tom");
+        ((Cat) cat).setColor(Cat.Color.BLACK);
         OutputStream os = new MyOutputStream();
         os.writeObject(cat);
         byte[] bytes = os.getBytes();
         InputStream is = new MyInputStream(bytes);
-        Object expected = cat;
         Object actual = is.readObject();
-        assertEquals(expected, actual);
+        assertEquals(cat, actual);
     }
 
 }
