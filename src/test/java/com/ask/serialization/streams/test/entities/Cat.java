@@ -15,6 +15,12 @@ public class Cat extends Animal {
         this.color = color;
     }
 
+    public Cat(Color color, String name) {
+        super(false, 4);
+        this.color = color;
+        this.setName(name);
+    }
+
     public Color getColor() {
         return color;
     }
